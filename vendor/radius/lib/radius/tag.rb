@@ -2,7 +2,11 @@ module Radius
   module Tag # :nodoc:
     
     def render(context)
-      context.render_tag(name.tag_name.text_value, attributes)
+      context.render_tag(tag_name, attributes)
+    end
+    
+    def tag_name
+      name.tag_name.text_value
     end
     
     def attributes
@@ -23,6 +27,20 @@ module Radius
   end
 
   module ContainerTag # :nodoc:
+    include Tag
+    
+    def render(context)
+      context.render_tag(tag_name, attributes) { contents.render(context) }
+    end
+    
+    def attrs
+      open_tag.attrs
+    end
+    
+    def name
+      open_tag.name
+    end
+    
     # attr_accessor :name, :attributes, :contents
     # 
     # def initialize(name = "", attributes = {}, contents = [], &b)

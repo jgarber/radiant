@@ -2,7 +2,7 @@ module Radius
   grammar Radius
     
     rule document
-      (tag)* {
+      (tag / other_text)* {
         def render(context)
           elements.collect {|e| e.render(context) }.join
         end
@@ -18,7 +18,7 @@ module Radius
     end
     
     rule container_tag
-      open_tag (!close_tag .)* close_tag
+      open_tag contents:document close_tag <ContainerTag>
     end
     
     rule open_tag
@@ -30,7 +30,7 @@ module Radius
     end
     
     rule attrs
-      space attr_collection:(attr*) {
+      space? attr_collection:(attr*) {
         def hash
           attr_collection.elements.inject({}) do |hash,attr|
             hash[attr.attr_name.text_value] = attr.attr_value.value
@@ -86,6 +86,14 @@ module Radius
     
     rule space
       ' '
+    end
+    
+    rule other_text
+      !close_tag . {
+        def render(context)
+          text_value
+        end
+      }
     end
     
   end
