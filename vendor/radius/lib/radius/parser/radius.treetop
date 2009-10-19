@@ -1,0 +1,92 @@
+module Radius
+  grammar Radius
+    
+    rule document
+      (tag)* {
+        def render(context)
+          elements.collect {|e| e.render(context) }.join
+        end
+      }
+    end
+    
+    rule tag
+      (self_tag / container_tag) <Tag>
+    end
+    
+    rule self_tag
+      "<" name attrs "/>"
+    end
+    
+    rule container_tag
+      open_tag (!close_tag .)* close_tag
+    end
+    
+    rule open_tag
+      "<" name attrs ">"
+    end
+    
+    rule close_tag
+      "</" name space* ">"
+    end
+    
+    rule attrs
+      space attr_collection:(attr*) {
+        def hash
+          attr_collection.elements.inject({}) do |hash,attr|
+            hash[attr.attr_name.text_value] = attr.attr_value.value
+            hash
+          end
+        end
+      }
+    end
+    
+    rule attr
+      attr_name space* "=" space* attr_value space*
+    end
+    
+    rule attr_name
+      name_char+
+    end
+    
+    rule attr_value
+      ('"' double_quoted_attr_value '"' / "'" single_quoted_attr_value "'") {
+        def value
+          if respond_to? :single_quoted_attr_value
+            single_quoted_attr_value.text_value
+          else
+            double_quoted_attr_value.text_value
+          end
+        end
+      }
+    end
+    
+    rule double_quoted_attr_value
+      ( "\\\"" / [^"] )*
+    end
+    
+    rule single_quoted_attr_value
+      ( "\\\'" / [^'] )*
+    end
+    
+    rule name
+      prefix ":" tag_name
+    end
+    
+    rule prefix
+      [\-A-Za-z0-9._?]+
+    end
+    
+    rule tag_name
+      name_char+
+    end
+    
+    rule name_char
+      [\-A-Za-z0-9._:?]
+    end
+    
+    rule space
+      ' '
+    end
+    
+  end
+end

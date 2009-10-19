@@ -1,3 +1,5 @@
+Treetop.load File.dirname(__FILE__) + "/parser/radius"
+
 module Radius
   #
   # The Radius parser. Initialize a parser with a Context object that
@@ -25,10 +27,13 @@ module Radius
 
     # Parses string for tags, expands them, and returns the result.
     def parse(string)
-      @stack = [ParseContainerTag.new { |t| t.contents.to_s }]
-      tokenize(string)
-      stack_up
-      @stack.last.to_s
+      @parser = RadiusParser.new
+      node = @parser.parse(string)
+      node.render(@context)
+      # @stack = [ParseContainerTag.new { |t| t.contents.to_s }]
+      # tokenize(string)
+      # stack_up
+      # @stack.last.to_s
     end
 
     protected
